@@ -8,10 +8,22 @@ import csv
 
 def get_portfolio_csv_lines(file_name):
     'open csv containing portfolio data: symbols, prices, num_shares'
+    portfolio = []
     with open(file_name) as f:
         rows = csv.reader(f)
         headers = next(rows)
-        return list(rows)
+        for row in rows:
+            try:
+                holding = dict(
+                    symbol = row[0],
+                    num_shares = int(row[1]),
+                    price = float(row[2])
+                )
+                portfolio.append(holding)
+            except ValueError:
+                print('Could not parse', line)
+                continue
+        return portfolio
 
 
 def calculate_cost(lines):
@@ -19,19 +31,7 @@ def calculate_cost(lines):
     portfolio_cost = 0.0
 
     for line in lines:
-        _, num_shares, price = line
-        try:
-            num_shares = int(num_shares)
-        except ValueError:
-            print('Could not parse', line)
-            continue
-        try:
-            price = float(price.strip())
-        except ValueError:
-            print('Could not parse', line)
-            continue
-
-        portfolio_cost = portfolio_cost + (num_shares * price)
+        portfolio_cost = portfolio_cost + (line['num_shares'] * line['price'])
 
     return portfolio_cost
 
