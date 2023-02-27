@@ -1,6 +1,5 @@
 import sys
 import csv
-import collections
 
 
 def read_portfolio(file_name):
@@ -59,25 +58,36 @@ def update_portfolio(portfolio, prices):
     return portfolio
 
 
-def make_report(portfolio, prices):
+def make_report(portfolio):
 
     report = []
 
-    Stock = collections.namedtuple(
-        'Stock',
-        ['Name', 'Shares', 'Price', 'Change']
-    )
+    for stock in portfolio:
+        try:
+            report.append({
+                "Name": stock['name'],
+                "Shares": stock['shares'],
+                "Price": stock['last_price'],
+                "Change": stock['last_price'] - float(stock['price'])
+                }
+            )
+        except ValueError:
+            print('Could not read', stock)
+            continue
 
-    aug_portfolio = update_portfolio(portfolio, prices)
-
-    for stock in aug_portfolio:
-        report.append(Stock(stock['name'],
-                            stock['shares'],
-                            stock['last_price'],
-                            stock['last_price'] - stock['price']
-                            )
-                      )
     return report
+
+
+def print_report(report):
+    headers = ('Name', 'Shares', 'Price', 'Change')
+    print()
+    print(f"{headers[0]:>10}{headers[1]:>10}{headers[2]:>10}{headers[3]:>10}")
+    underline = '-'*10 + ' '
+    print(f"{underline*4: ^40}")
+    for stock in report:
+        formatted_price = f"${stock['Price']:.2f}"
+        print(f"{stock['Name']: >9s}{stock['Shares']: >10} {formatted_price: >10}{stock['Change']: >10.2f}")
+    return
 
 
 def main():
@@ -103,6 +113,13 @@ def main():
         print('Portfolio gain/( loss ): (', new_value - original_value, ')')
     else:
         print('Portfolio gain/( loss ):', new_value - original_value)
+
+    print("""
+          BEGIN REPORT
+    ===================================================
+          """)
+
+    print_report(make_report(new_portfolio))
 
     return
 
