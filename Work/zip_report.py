@@ -1,10 +1,5 @@
-# pcost.py
-#
-# Exercise 1.27
-
 import sys
 import csv
-import collections
 
 
 def read_portfolio(file_name):
@@ -14,13 +9,8 @@ def read_portfolio(file_name):
         rows = csv.reader(f)
         headers = next(rows)
         for row in rows:
-
             try:
-                stock = {
-                    'symbol' : row[0],
-                    'shares' : int(row[1]),
-                    'initial_price' : float(row[2])
-                }
+                stock = dict(zip(headers, row))
             except ValueError:
                 print('Could not parse', row)
                 continue
@@ -34,8 +24,12 @@ def calculate_portfolio(portfolio):
     portfolio_value = 0.0
 
     for stock in portfolio:
-        portfolio_value = portfolio_value + \
-            (stock['shares'] * stock['initial_price'])
+        if 'last_price' in stock.keys():
+            portfolio_value = portfolio_value + \
+                (int(stock['shares']) * float(stock['last_price']))
+        else:
+            portfolio_value = portfolio_value + \
+                (int(stock['shares']) * float(stock['price']))
 
     return portfolio_value
 
@@ -60,30 +54,40 @@ def read_prices(file_name):
 def update_portfolio(portfolio, prices):
 
     for idx, stock in enumerate(portfolio):
-        if stock['symbol'] in prices.keys():
-            portfolio[idx]['current_price'] = prices[stock['symbol']]
+        portfolio[idx]['last_price'] = prices[stock['name']]
     return portfolio
 
 
-def make_report(portfolio, prices):
+def make_report(portfolio):
 
     report = []
 
-    Stock = collections.namedtuple(
-        'Stock',
-        ['Name', 'Shares', 'Price', 'Change']
-    )
+    for stock in portfolio:
+        try:
+            report.append({
+                "Name": stock['name'],
+                "Shares": stock['shares'],
+                "Price": stock['last_price'],
+                "Change": stock['last_price'] - float(stock['price'])
+                }
+            )
+        except ValueError:
+            print('Could not read', stock)
+            continue
 
-    aug_portfolio = update_portfolio(portfolio, prices)
-
-    for stock in aug_portfolio:
-        report.append(Stock(stock['symbol'],
-                            stock['shares'],
-                            stock['current_price'],
-                            stock['current_price'] - stock['initial_price']
-                            )
-                      )
     return report
+
+
+def print_report(report):
+    headers = ('Name', 'Shares', 'Price', 'Change')
+    print()
+    print(f"{headers[0]:>10}{headers[1]:>10}{headers[2]:>10}{headers[3]:>10}")
+    underline = '-'*10 + ' '
+    print(f"{underline*4: ^40}")
+    for stock in report:
+        formatted_price = f"${stock['Price']:.2f}"
+        print(f"{stock['Name']: >9s}{stock['Shares']: >10} {formatted_price: >10}{stock['Change']: >10.2f}")
+    return
 
 
 def main():
@@ -109,6 +113,13 @@ def main():
         print('Portfolio gain/( loss ): (', new_value - original_value, ')')
     else:
         print('Portfolio gain/( loss ):', new_value - original_value)
+
+    print("""
+          BEGIN REPORT
+    ===================================================
+          """)
+
+    print_report(make_report(new_portfolio))
 
     return
 
