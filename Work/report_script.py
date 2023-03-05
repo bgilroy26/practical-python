@@ -95,14 +95,14 @@ def print_report(report):
     return
 
 
-def main():
-    portfolio = read_portfolio(sys.argv[1])
+def portfolio_report(portfolio_file_name, prices_file_name):
+    portfolio = read_portfolio(portfolio_file_name)
 
     original_value = calculate_portfolio(portfolio)
 
     print('Portfolio original value:', original_value)
 
-    prices = read_prices(sys.argv[2])
+    prices = read_prices(prices_file_name)
 
     new_portfolio = update_portfolio(portfolio, prices)
 
@@ -118,4 +118,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    portfolio_report(sys.argv[1], sys.argv[2])
