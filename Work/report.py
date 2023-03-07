@@ -4,10 +4,15 @@ import fileparse
 
 def read_portfolio(file_name):
     'open csv containing portfolio data: symbols, prices, shares'
-    portfolio = fileparse.parse_csv(file_name,
-                                    select=['name', 'shares', 'price'],
-                                    types=[str, int, float]
-                                    )
+    try:
+        portfolio = fileparse.parse_csv(file_name,
+                                        select=['name', 'shares', 'price'],
+                                        types=[str, int, float]
+                                        )
+    except TypeError as e:
+        if 'TextIOWrapper' in e:
+            print('inside')
+            return
     return portfolio
 
 
