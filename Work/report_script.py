@@ -15,7 +15,6 @@ def calculate_portfolio(portfolio):
     'calculate cost of a portfolio based on dict of dicts symbols: {ct, prices}'
     portfolio_value = 0.0
 
-    print(portfolio)
     for stock in portfolio:
         if 'last_price' in stock.keys():
             portfolio_value = portfolio_value + \
@@ -43,7 +42,6 @@ def get_price_of_stock(prices, symbol):
 def update_portfolio(portfolio, prices):
 
     for idx, stock in enumerate(portfolio):
-        print(prices)
         portfolio[idx]['last_price'] = \
             get_price_of_stock(prices, portfolio[idx]['name'])[1]
     return portfolio
@@ -88,7 +86,7 @@ def print_report(report):
     return
 
 
-def portfolio_report(portfolio_file_name, prices_file_name):
+def main(portfolio_file_name, prices_file_name):
     portfolio = read_portfolio(portfolio_file_name)
 
     original_value = calculate_portfolio(portfolio)
@@ -111,4 +109,4 @@ def portfolio_report(portfolio_file_name, prices_file_name):
 
 
 if __name__ == '__main__':
-    portfolio_report(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2])
