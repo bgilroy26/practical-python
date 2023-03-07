@@ -1,19 +1,13 @@
 import sys
-import csv
+import fileparse
 
 
 def read_portfolio(file_name):
     'open csv containing portfolio data: symbols, prices, shares'
-    portfolio = []
-    with open(file_name, 'r') as f:
-        rows = csv.reader(f)
-        headers = next(rows)
-        select = ['name', 'shares', 'price']
-        indices = [headers.index(colname) for colname in select]
-        portfolio = [{colname: row[idx]
-                      for colname, idx in zip(select, indices)}
-                     for row in rows]
-
+    portfolio = fileparse.parse_csv(file_name,
+                                    select=['name', 'shares', 'price'],
+                                    types=[str, int, float]
+                                    )
     return portfolio
 
 
@@ -21,6 +15,7 @@ def calculate_portfolio(portfolio):
     'calculate cost of a portfolio based on dict of dicts symbols: {ct, prices}'
     portfolio_value = 0.0
 
+    print(portfolio)
     for stock in portfolio:
         if 'last_price' in stock.keys():
             portfolio_value = portfolio_value + \
@@ -33,26 +28,24 @@ def calculate_portfolio(portfolio):
 
 
 def read_prices(file_name):
-    'open csv containing price data: symbol, price'
-    prices = {}
-    with open(file_name, 'r') as f:
-        rows = csv.reader(f)
-        for row in rows:
-            if len(row) == 2:
-                try:
-                    prices[row[0]] = float(row[1])
-                except ValueError:
-                    print('Could not parse', row)
-                    continue
-            else:
-                continue
+    'open csv containing price data: name, price'
+    prices = fileparse.parse_csv(file_name,
+                                 types=[str, float],
+                                 has_headers=False
+                                 )
     return prices
+
+
+def get_price_of_stock(prices, symbol):
+    return [price for price in prices if price[0] == symbol][0]
 
 
 def update_portfolio(portfolio, prices):
 
     for idx, stock in enumerate(portfolio):
-        portfolio[idx]['last_price'] = prices[stock['name']]
+        print(prices)
+        portfolio[idx]['last_price'] = \
+            get_price_of_stock(prices, portfolio[idx]['name'])[1]
     return portfolio
 
 
@@ -65,8 +58,8 @@ def make_report(portfolio):
             report.append({
                 "Name": stock['name'],
                 "Shares": stock['shares'],
-                "Price": stock['last_price'],
-                "Change": stock['last_price'] - float(stock['price'])
+                "Price": stock['price'],
+                "Change": stock['price'] - float(stock['last_price'])
                 }
             )
         except ValueError:
